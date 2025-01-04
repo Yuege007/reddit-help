@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@400;700&family=ZCOOL+XiaoWei&family=ZCOOL+KuaiLe&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Long+Cang&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;700&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
+  <style>
+    body {
+      width: 360px;
+      padding: 16px;
+      font-family: Arial, sans-serif;
+      background: white;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .settings-row {
+      display: flex;
+      gap: 8px;
+    }
+    .settings-group {
+      flex: 1;
+      position: relative;
+    }
+    .settings-button {
+      width: 100%;
+      padding: 8px 12px;
+      background: #f7f7f7;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 0;
+      outline: none;
+      font-family: inherit;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+    .settings-button:hover {
+      background: #f0f0f0;
+    }
+    .settings-popup {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 200px;
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+    .settings-group.active .settings-popup {
+      display: block;
+    }
+    .setting-item {
+      margin-bottom: 8px;
+    }
+    .setting-item:last-child {
+      margin-bottom: 0;
+    }
+    .setting-label {
+      display: block;
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .setting-value {
+      font-size: 11px;
+      color: #999;
+      margin-left: 4px;
+    }
+    input[type="range"] {
+      width: 100%;
+      margin: 4px 0;
+    }
+    input[type="color"] {
+      width: 100%;
+      height: 24px;
+      padding: 2px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      font-size: 14px;
+    }
+    select:focus {
+      outline: none;
+      border-color: #ff2442;
+    }
+    .preview {
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 12px;
+      margin: 16px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: #ff2442;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.2s;
+    }
+    .btn:hover {
+      background: #e61e3c;
+    }
+    .arrow {
+      border: solid #666;
+      border-width: 0 2px 2px 0;
+      display: inline-block;
+      padding: 2px;
+      transform: rotate(45deg);
+      transition: transform 0.2s;
+    }
+    .settings-group.active .arrow {
+      transform: rotate(-135deg);
+    }
+    .settings-group:last-child .settings-popup {
+      left: auto;
+      right: 0;
+    }
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .dropdown-toggle {
+      width: 100%;
+      padding: 8px 12px;
+      background: #f7f7f7;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    .dropdown-toggle:hover {
+      background: #f0f0f0;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      z-index: 1000;
+      min-width: 200px;
+      padding: 12px;
+      margin: 4px 0 0;
+      background-color: #fff;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.1);
+    }
+
+    .dropdown.show .dropdown-menu {
+      display: block;
+    }
+
+    .dropdown-menu .setting-item {
+      margin-bottom: 8px;
+    }
+
+    .settings-select {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      background: #f7f7f7;
+      cursor: pointer;
+      font-size: 13px;
+      color: #333;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+    }
+
+    .settings-select:hover {
+      background-color: #f0f0f0;
+    }
+
+    .settings-select:focus {
+      outline: none;
+      border-color: #ddd;
+    }
+
+    .settings-option {
+      padding: 8px;
+      background: white;
+    }
+
+    /* 下拉选择器样式 */
+    .settings-select-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .settings-select-button {
+      width: 100%;
+      padding: 8px 12px;
+      background: #f7f7f7;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #333;
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-select-button:hover {
+      background: #f0f0f0;
+    }
+
+    .settings-select-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      width: 200px;
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-top: 4px;
+      z-index: 1000;
+      padding: 8px 0;
+    }
+
+    .settings-select-wrapper.opened .settings-select-menu {
+      display: block;
+    }
+
+    .settings-select-item {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+
+    .settings-select-item:hover {
+      background: #f7f7f7;
+    }
+
+    .settings-select-arrow {
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 5px 5px 0 5px;
+      border-color: #666 transparent transparent transparent;
+      transition: transform 0.2s;
+    }
+
+    .settings-select-wrapper.opened .settings-select-arrow {
+      transform: rotate(180deg);
+    }
+
+    /* 工具栏样式 */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding: 8px;
+      background: #f7f7f7;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+
+    .toolbar-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 8px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toolbar-item:hover {
+      background: #f0f0f0;
+    }
+
+    .toolbar-item .icon {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+    }
+
+    .toolbar-item .arrow {
+      width: 0;
+      height: 0;
+      margin-left: 4px;
+      border-style: solid;
+      border-width: 4px 4px 0 4px;
+      border-color: #666 transparent transparent transparent;
+    }
+
+    .toolbar-dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      min-width: 120px;
+      padding: 4px 0;
+      margin-top: 4px;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 2px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .toolbar-item.active .toolbar-dropdown {
+      display: block;
+    }
+
+    .toolbar-dropdown-item {
+      display: flex;
+      align-items: center;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .toolbar-dropdown-item:hover {
+      background: #f7f7f7;
+    }
+
+    .toolbar-dropdown-item input {
+      margin-right: 8px;
+    }
+
+    /* 编辑器工具栏样式 */
+    .editor-toolbar {
+      background: #f7f7f7;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 16px;
+    }
+
+    /* 工具栏组样式 */
+    .toolbar-group {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* 编辑器按钮样式 */
+    .editor-button {
+      position: relative;
+      flex: 1;
+      padding: 8px 12px;
+      background: white;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .editor-button:hover {
+      background: #f0f0f0;
+    }
+
+    .editor-button.active {
+      background: #ff2442;
+      color: white;
+    }
+
+    /* 下拉菜单样式 */
+    .editor-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 180px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 8px;
+      z-index: 1000;
+    }
+
+    /* 下拉菜单项样式 */
+    .editor-dropdown-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    /* 标签样式 */
+    .editor-dropdown-item label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #666;
+    }
+
+    /* 滑动条容器样式 */
+    .range-container {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* 滑动条样式 */
+    input[type="range"] {
+      flex: 1;
+      height: 3px;
+      margin: 2px 0;
+    }
+
+    /* 数值显示样式 */
+    .range-container span {
+      min-width: 24px;
+      font-size: 9px;
+      color: #666;
+      text-align: right;
+    }
+
+    /* 分隔线样式 */
+    .editor-dropdown-divider {
+      margin: 4px 0;
+      border-top: 1px solid #eee;
+    }
+
+    /* 下拉选择框样式 */
+    select {
+      width: 100%;
+      padding: 4px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    /* 颜色选择器样式 */
+    input[type="color"] {
+      width: 100%;
+      height: 20px;
+      padding: 1px;
+      border: 1px solid #ddd;
+    }
+
+    /* 确保下拉菜单不会超出视口 */
+    .editor-button {
+      position: relative;
+    }
+
+    .editor-button:last-child .editor-dropdown,
+    .editor-button:nth-last-child(2) .editor-dropdown {
+      left: auto;
+      right: 0;
+      transform: none;
+    }
+
+    .editor-button:first-child .editor-dropdown,
+    .editor-button:nth-child(2) .editor-dropdown {
+      left: 0;
+      transform: none;
+    }
+
+    /* 工具栏切换动画 */
+    .toolbar-group {
+      transition: all 0.3s ease;
+      opacity: 1;
+    }
+
+    .toolbar-group[style*="display: none"] {
+      opacity: 0;
+      position: absolute;
+    }
+
+    .preview-tabs {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .preview-tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      background: #f5f5f5;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preview-tab.active {
+      background: #ff2442;
+      color: white;
+    }
+
+    .preview-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .preview-section {
+      display: none; /* 默认隐藏 */
+    }
+    
+    .preview-section.active {
+      display: block; /* 激活时显示 */
+    }
+    
+    .preview-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .preview-tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      border-radius: 4px;
+      background: #f5f5f5;
+      cursor: pointer;
+    }
+    
+    .preview-tab.active {
+      background: #ff2442;
+      color: white;
+    }
+
+    /* 回答预览样式 */
+    .answer-preview-item {
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 20px;
+    }
+
+    .answer-preview-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+
+    .answer-preview-item h3 {
+      margin: 0 0 10px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .answer-preview-item img {
+      width: 100%;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 修改工具栏组样式 */
+    .toolbar-group {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+    }
+
+    /* 添加工具栏切换动画 */
+    .toolbar-group {
+      transition: all 0.3s ease;
+      opacity: 1;
+    }
+
+    .toolbar-group[style*="display: none"] {
+      opacity: 0;
+      position: absolute;
+    }
+
+    /* 下拉菜单显示控制 */
+    .editor-button.active .editor-dropdown {
+      display: block;  /* 当按钮激活时显示下拉菜单 */
+    }
+
+    /* 下拉菜单样式优化 */
+    .editor-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 180px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: white;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      padding: 8px;
+      z-index: 1000;
+    }
+
+    /* 确保下拉菜单在按钮上方 */
+    .editor-button {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* 添加点击事件的视觉反馈 */
+    .editor-button:active {
+      transform: translateY(1px);
+    }
+
+    /* 激活状态的按钮样式 */
+    .editor-button.active {
+      background: #ff2442;
+      color: white;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 评论标签样式 */
+    .comment-tabs {
+      display: flex;
+      flex-wrap: wrap;  /* 允许标签换行 */
+      gap: 8px;  /* 标签之间的间距 */
+      margin-bottom: 12px;
+    }
+
+    .comment-tab {
+      flex: 0 0 auto;  /* 允许标签自适应宽度 */
+      padding: 6px 12px;
+      font-size: 12px;  /* 稍微减小字体大小 */
+      white-space: nowrap;
+    }
+
+    .comment-tab.active {
+      background: #ff2442;
+      color: white;
+    }
+
+    /* 评论预览区域样式 */
+    .comment-preview {
+      display: none;
+    }
+
+    .comment-preview.active {
+      display: block;
+    }
+
+    .number-input {
+      width: 45px;
+      padding: 2px 4px;
+      margin-left: 4px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    .editor-dropdown-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .editor-dropdown-item label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* 浮动编辑框样式 */
+    .floating-editor {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 2000;
+      width: 80%;
+      max-width: 500px;
+    }
+
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .editor-title {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .close-floating-editor {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 5px;
+      color: #666;
+    }
+
+    .close-floating-editor:hover {
+      color: #333;
+    }
+
+    .edit-content {
+      width: 100%;
+      min-height: 200px;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 1.6;
+      resize: vertical;
+    }
+
+    .editor-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .editor-buttons button {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: none;
+      font-size: 14px;
+    }
+
+    .save-edit {
+      background: #ff2442;
+      color: white;
+    }
+
+    .save-edit:hover {
+      background: #e61e3c;
+    }
+
+    .cancel-edit {
+      background: #f5f5f5;
+      color: #666;
+    }
+
+    .cancel-edit:hover {
+      background: #eee;
+    }
+
+    .editor-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="editor-toolbar">
+      <!-- 问题模式工具栏 -->
+      <div class="toolbar-group question-toolbar">
+        <!-- 标题设置 -->
+        <div class="editor-button" data-tooltip="标题">
+          <span>标题</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <label>字体</label>
+              <select id="titleFontFamily">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                <option value="'Noto Sans SC', sans-serif">思源黑体</option>
+                <option value="'Noto Serif SC', sans-serif">思源宋体</option>
+                <option value="'ZCOOL XiaoWei', sans-serif">小薇字体</option>
+                <option value="'ZCOOL KuaiLe', sans-serif">站酷快乐体</option>
+                <option value="'Ma Shan Zheng', cursive">马善政毛笔体</option>
+                <option value="'Long Cang', cursive">龙藏手写体</option>
+                <option value="'Zhi Mang Xing', cursive">智慧体</option>
+                <option value="'Liu Jian Mao Cao', cursive">柳体</option>
+                <option value="'Noto Sans TC', sans-serif">思源黑体繁体</option>
+                <option value="'Noto Serif TC', sans-serif">思源宋体繁体</option>
+                <option value="'ZCOOL QingKe HuangYou', cursive">青柯黄油体</option>
+                <option value="'ZCOOL KuaiLe', cursive">站酷酷黑体</option>
+              </select>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>字号 <input type="number" class="number-input" data-target="titleFontSize" value="44" min="12" max="96" step="2"></label>
+              <input type="range" id="titleFontSize" min="12" max="96" step="2" value="44">
+              <span id="titleFontSizeValue">44px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>字间距 <input type="number" class="number-input" data-target="titleLetterSpacing" value="0" min="0" max="5" step="0.25"></label>
+              <input type="range" id="titleLetterSpacing" min="0" max="5" step="0.25" value="0">
+              <span id="titleLetterSpacingValue">0px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>行间距 <input type="number" class="number-input" data-target="titleLineHeight" value="1.4" min="1.2" max="2.0" step="0.1"></label>
+              <input type="range" id="titleLineHeight" min="1.2" max="2.0" step="0.1" value="1.4">
+              <span id="titleLineHeightValue">1.4</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>顶部间距 <input type="number" class="number-input" data-target="titleAreaSpacing" value="60" min="20" max="100" step="5"></label>
+              <input type="range" id="titleAreaSpacing" min="20" max="100" step="5" value="60">
+              <span id="titleAreaSpacingValue">60px</span>
+            </div>
+          </div>
+        </div>
+        <!-- 正文设置 -->
+        <div class="editor-button" data-tooltip="正文">
+          <span>正文</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <label>字体</label>
+              <select id="contentFontFamily">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                <option value="'Noto Sans SC', sans-serif">思源黑体</option>
+                <option value="'Noto Serif SC', sans-serif">思源宋体</option>
+                <option value="'ZCOOL XiaoWei', sans-serif">小薇字体</option>
+                <option value="'ZCOOL KuaiLe', sans-serif">站酷快乐体</option>
+                <option value="'Ma Shan Zheng', cursive">马善政毛笔体</option>
+                <option value="'Long Cang', cursive">龙藏手写体</option>
+                <option value="'Zhi Mang Xing', cursive">智慧体</option>
+                <option value="'Liu Jian Mao Cao', cursive">柳体</option>
+                <option value="'Noto Sans TC', sans-serif">思源黑体繁体</option>
+                <option value="'Noto Serif TC', sans-serif">思源宋体繁体</option>
+                <option value="'ZCOOL QingKe HuangYou', cursive">青柯黄油体</option>
+                <option value="'ZCOOL KuaiLe', cursive">站酷酷黑体</option>
+              </select>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>字号</label>
+              <input type="range" 
+                id="contentFontSize" 
+                min="12" 
+                max="96" 
+                step="2" 
+                value="32">
+              <span id="contentFontSizeValue">32px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>字间距</label>
+              <input type="range" id="contentLetterSpacing" min="0" max="5" step="0.25" value="0">
+              <span id="contentLetterSpacingValue">0px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>行间距</label>
+              <input type="range" id="contentLineHeight" min="1.4" max="2.2" step="0.1" value="1.8">
+              <span id="contentLineHeightValue">1.8</span>
+            </div>
+          </div>
+        </div>
+        <!-- 颜色设置 -->
+        <div class="editor-button" data-tooltip="颜色">
+          <span>颜色</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <label>标题颜色</label>
+              <input type="color" id="titleColor" value="#333333">
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>正文颜色</label>
+              <input type="color" id="textColor" value="#3f3f3f">
+            </div>
+          </div>
+        </div>
+        <!-- 背景色设置 -->
+        <div class="editor-button" data-tooltip="背景">
+          <span>背景</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <input type="color" id="backgroundColor" value="#ffffff">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 回答模式工具栏 -->
+      <div class="toolbar-group answer-toolbar" style="display: none;">
+        <!-- 正文设置 -->
+        <div class="editor-button" data-tooltip="正文">
+          <span>正文</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <label>字体</label>
+              <select id="answerContentFontFamily">
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                <option value="'Noto Sans SC', sans-serif">思源黑体</option>
+                <option value="'Noto Serif SC', sans-serif">思源宋体</option>
+                <option value="'ZCOOL XiaoWei', sans-serif">小薇字体</option>
+                <option value="'ZCOOL KuaiLe', sans-serif">站酷快乐体</option>
+                <option value="'Ma Shan Zheng', cursive">马善政毛笔体</option>
+                <option value="'Long Cang', cursive">龙藏手写体</option>
+                <option value="'Zhi Mang Xing', cursive">智慧体</option>
+                <option value="'Liu Jian Mao Cao', cursive">柳体</option>
+                <option value="'Noto Sans TC', sans-serif">思源黑体繁体</option>
+                <option value="'Noto Serif TC', sans-serif">思源宋体繁体</option>
+                <option value="'ZCOOL QingKe HuangYou', cursive">青柯黄油体</option>
+                <option value="'ZCOOL KuaiLe', cursive">站酷酷黑体</option>
+              </select>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>字号</label>
+              <input type="range" 
+                id="answerContentFontSize" 
+                min="12" 
+                max="96" 
+                step="2" 
+                value="32">
+              <span id="answerContentFontSizeValue">32px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>字间距</label>
+              <input type="range" id="answerContentLetterSpacing" min="0" max="5" step="0.25" value="0">
+              <span id="answerContentLetterSpacingValue">0px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>行间距</label>
+              <input type="range" id="answerContentLineHeight" min="1.4" max="2.2" step="0.1" value="1.8">
+              <span id="answerContentLineHeightValue">1.8</span>
+            </div>
+          </div>
+        </div>
+        <!-- 作者设置 -->
+        <div class="editor-button" data-tooltip="作者">
+          <span>作者</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <label>字号 <input type="number" class="number-input" data-target="answerAuthorFontSize" value="42" min="20" max="60" step="2"></label>
+              <input type="range" id="answerAuthorFontSize" min="20" max="60" step="2" value="42">
+              <span id="answerAuthorFontSizeValue">42px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>与顶部间距</label>
+              <input type="range" 
+                id="answerAuthorSpacing" 
+                min="20" 
+                max="100" 
+                step="5" 
+                value="45">
+              <span id="answerAuthorSpacingValue">45px</span>
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>与正文间距</label>
+              <input type="range" 
+                id="authorContentSpacing" 
+                min="20" 
+                max="100" 
+                value="40">
+              <span id="authorContentSpacingValue">40px</span>
+            </div>
+          </div>
+        </div>
+        <!-- 颜色设置 -->
+        <div class="editor-button" data-tooltip="颜色">
+          <span>颜色</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <label>正文颜色</label>
+              <input type="color" id="textColor" value="#3f3f3f">
+            </div>
+            <div class="editor-dropdown-divider"></div>
+            <div class="editor-dropdown-item">
+              <label>背景色</label>
+              <input type="color" id="backgroundColor" value="#ffffff">
+            </div>
+          </div>
+        </div>
+        <!-- 背景色设置 -->
+        <div class="editor-button" data-tooltip="背景">
+          <span>背景</span>
+          <div class="editor-dropdown">
+            <div class="editor-dropdown-item">
+              <input type="color" id="backgroundColor" value="#ffffff">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 预览换按钮 -->
+    <div class="preview-tabs">
+      <button class="preview-tab active" data-type="question">问题预览</button>
+      <button class="preview-tab" data-type="answer">回答预览</button>
+    </div>
+
+    <!-- 分开的预览区域 -->
+    <div class="preview-container">
+      <!-- 问题预览区域 -->
+      <div id="question-preview" class="preview-section active">
+        <div class="preview">
+          <p>问题预览区域</p>
+        </div>
+        <button id="question-download" class="btn" style="display: none;">下载问题图片</button>
+      </div>
+
+      <!-- 回答预览区域 -->
+      <div id="answer-preview" class="preview-section">
+        <!-- 评论切换标签 -->
+        <div class="comment-tabs">
+          <!-- 动态生成评论标签 -->
+        </div>
+        
+        <div class="preview">
+          <!-- 单个评论的预览区域 -->
+          <div class="comment-preview active">
+            <p>请选择要预览的评论</p>
+          </div>
+        </div>
+        <button id="answer-download" class="btn" style="display: none;">下载回答图片</button>
+      </div>
+    </div>
+
+    <button id="convert" class="btn">一键转换为小红书卡片</button>
+
+    <div class="api-key-section" style="margin-top: 16px; padding: 16px; border-top: 1px solid #eee;">
+      <input type="text" id="apiKey" placeholder="请输入API Key" style="width: 100%; padding: 8px; margin-bottom: 8px;">
+      <button id="saveApiKey" class="btn">保存 API Key</button>
+    </div>
+  </div>
+
+  <!-- 添加浮动编辑框 -->
+  <div class="floating-editor" style="display: none;">
+    <div class="editor-header">
+      <span class="editor-title">编辑内容</span>
+      <button class="close-floating-editor">&times;</button>
+    </div>
+    <textarea class="edit-content"></textarea>
+    <div class="editor-buttons">
+      <button class="save-edit">保存</button>
+      <button class="cancel-edit">取消</button>
+    </div>
+  </div>
+
+  <!-- 添加遮罩层 -->
+  <div class="editor-overlay" style="display: none;"></div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html> 

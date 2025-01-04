@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Reddit to Xiaohongshu",
+  "version": "1.0",
+  "description": "将Reddit帖子转换为小红书风格的图片",
+  "icons": {
+    "16": "images/icon16.png",
+    "48": "images/icon48.png",
+    "128": "images/icon128.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    },
+    "persistent": true
+  },
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs",
+    "scripting",
+    "https://www.reddit.com/*"
+  ],
+  "host_permissions": [
+    "*://*.reddit.com/*",
+    "*://*.redditmedia.com/*",
+    "https://ark.cn-beijing.volces.com/*",
+    "chrome-extension://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.reddit.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [{
+    "resources": [
+      "fonts/*.ttf",
+      "fonts/*.woff",
+      "fonts/*.woff2",
+      "imageGenerator.js"
+    ],
+    "matches": ["<all_urls>"]
+  }]
+} 

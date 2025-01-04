@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <script type="module" src="imageGenerator.js"></script>
+  <script type="module">
+    import { ImageGenerator } from './imageGenerator.js';
+
+    // 监听消息
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.action === 'generatePreview') {
+        const generator = new ImageGenerator(request.config);
+        generator.generateImage(request.content)
+          .then(imageData => {
+            sendResponse({ success: true, imageData });
+          })
+          .catch(error => {
+            sendResponse({ success: false, error: error.message });
+          });
+        return true; // 保持消息通道开放
+      }
+    });
+  </script>
+</head>
+<body>
+  <!-- 空白页面 -->
+</body>
+</html> 
